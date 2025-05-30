@@ -1,0 +1,17 @@
+<div class="image-upload">
+  <h1>Upload Image</h1>
+  <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
+    <label for="file">Select Image:</label>
+    <input id="file" type="file" (change)="onFileChange($event)" />
+
+    <label for="colorId">Color ID:</label>
+    <input id="colorId" type="text" formControlName="colorId" placeholder="Enter Color ID" />
+
+    <label for="isPrimary">Is Primary:</label>
+    <input id="isPrimary" type="checkbox" formControlName="isPrimary" />
+    <label for="isPrimary">Is main picture?</label>
+
+    <button type="submit" [disabled]="!uploadForm.valid">Upload</button>
+  </form>
+  <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+</div>

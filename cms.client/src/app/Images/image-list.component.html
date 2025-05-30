@@ -1,0 +1,35 @@
+<div class="image-list">
+
+  <div class="filter-section">
+    <h3>Filter by Color</h3>
+    <div class="color-buttons">
+      <button (click)="loadImages()">All Colors</button>
+      <button *ngFor="let color of colors" (click)="filterByColorName(color.colorName)">
+        {{ color.colorName }}
+      </button>
+    </div>
+  </div>
+
+  <h1>Images</h1>
+  <div class="image-grid">
+    <div class="image-card" *ngFor="let image of paginatedImages">
+      <img [src]="image.url" alt="Image" />
+      <button (click)="deleteImage(image.id)">Delete</button>
+    </div>
+  </div>
+
+  <div class="pagination">
+    <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage * itemsPerPage >= images.length">Next</button>
+  </div>
+
+  <div *ngIf="clothImages.length > 0" class="cloth-images">
+    <h2>All Images of Selected Cloth</h2>
+    <div class="image-grid">
+      <div class="image-card" *ngFor="let image of clothImages">
+        <img [src]="image.url" alt="Image" />
+      </div>
+    </div>
+  </div>
+</div>

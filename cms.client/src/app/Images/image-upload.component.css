@@ -1,0 +1,63 @@
+.image-upload {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+  .image-upload h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .image-upload label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold; /* Make labels stand out */
+  }
+
+  .image-upload input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .image-upload button {
+    width: 100%;
+    background-color: #f4a261;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+    .image-upload button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+  .image-upload .success {
+    color: green;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+.image-upload input[type="text"],
+.image-upload input[type="checkbox"] {
+  margin-bottom: 15px; /* Add spacing for new inputs */
+}
+
+.image-upload input[type="checkbox"] {
+  width: auto; /* Ensure the checkbox size is appropriate */
+  margin-right: 10px; /* Add spacing next to the label */
+}
+
+.image-upload label[for="isPrimary"] {
+  display: inline; /* Align checkbox label inline with the input */
+  font-weight: normal; /* Keep it light to differentiate from other labels */
+}

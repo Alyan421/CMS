@@ -1,0 +1,11 @@
+<div class="cloth-list">
+  <h1>Cloths</h1>
+  <div class="cloth-grid">
+    <div class="cloth-card" *ngFor="let cloth of cloths">
+      <h2>{{ cloth.name }}</h2>
+      <p>Price: ${{ cloth.price }}</p>
+      <p>{{ cloth.description }}</p>
+      <button (click)="deleteCloth(cloth.id)">Delete</button>
+    </div>
+  </div>
+</div>

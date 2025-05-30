@@ -1,0 +1,29 @@
+.color-list {
+  padding: 20px;
+}
+
+  .color-list ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .color-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .color-list button {
+    background-color: #f4a261;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+    .color-list button:hover {
+      background-color: #e76f51;
+    }

@@ -1,0 +1,10 @@
+<div class="color-list">
+  <h1>Colors</h1>
+  <ul>
+    <li *ngFor="let color of colors">
+      <span>{{ color.colorName }}</span>
+      <span>Stock: {{ color.availiableStock }}</span>
+      <button (click)="deleteColor(color.id)">Delete</button>
+    </li>
+  </ul>
+</div>

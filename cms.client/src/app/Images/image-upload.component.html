@@ -1,17 +1,103 @@
-<div class="image-upload">
-  <h1>Upload Image</h1>
-  <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
-    <label for="file">Select Image:</label>
-    <input id="file" type="file" (change)="onFileChange($event)" />
+<div class="image-upload-container">
+  <div class="upload-card">
+    <h1>Upload Image</h1>
+    <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
+      <!-- Image Upload Section -->
+      <div class="section image-section">
+        <h2>Select Image</h2>
+        <div class="file-upload-area" (click)="fileInput.click()" [class.has-file]="uploadForm.get('file')?.value">
+          <input #fileInput type="file" hidden (change)="onFileChange($event)" accept="image/*">
+          <div class="upload-placeholder" *ngIf="!uploadForm.get('file')?.value">
+            <i class="fa fa-cloud-upload-alt"></i>
+            <p>Click to select an image</p>
+          </div>
+          <div class="image-preview" *ngIf="imagePreview">
+            <img [src]="imagePreview" alt="Image preview">
+          </div>
+        </div>
+      </div>
 
-    <label for="colorId">Color ID:</label>
-    <input id="colorId" type="text" formControlName="colorId" placeholder="Enter Color ID" />
+      <!-- Existing Colors Selection Section -->
+      <div class="section color-section" *ngIf="!isAddingNewClothColor">
+        <h2>Select Existing Color</h2>
+        <div class="form-group">
+          <label for="existingColor">Choose a color:</label>
+          <select id="existingColor" formControlName="colorId" class="form-control">
+            <option value="">-- Select Color --</option>
+            <option *ngFor="let color of colors" [value]="color.id">
+              {{ color.colorName }} (Cloth: {{ getClothName(color.clothId) }})
+            </option>
+          </select>
+        </div>
 
-    <label for="isPrimary">Is Primary:</label>
-    <input id="isPrimary" type="checkbox" formControlName="isPrimary" />
-    <label for="isPrimary">Is main picture?</label>
+        <div class="add-new-links">
+          <button type="button" class="link-button" (click)="toggleNewClothColor()">
+            <i class="fa fa-plus-circle"></i> Add New Cloth and Color
+          </button>
+        </div>
+      </div>
 
-    <button type="submit" [disabled]="!uploadForm.valid">Upload</button>
-  </form>
-  <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+      <!-- New Cloth and Color Form -->
+      <div class="section new-item-section" *ngIf="isAddingNewClothColor">
+        <h2>Add New Cloth and Color</h2>
+
+        <!-- New Cloth Form -->
+        <div class="form-group">
+          <label for="clothName">Cloth Name:</label>
+          <input id="clothName" type="text" formControlName="clothName" class="form-control" placeholder="e.g. T-Shirt, Jeans">
+        </div>
+
+        <div class="form-group">
+          <label for="clothPrice">Cloth Price (PKR):</label>
+          <div class="price-input">
+            <span class="currency">PKR</span>
+            <input id="clothPrice" type="number" step="0.01" formControlName="clothPrice" class="form-control" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="clothDescription">Cloth Description:</label>
+          <textarea id="clothDescription" formControlName="clothDescription" class="form-control" placeholder="Product description" rows="2"></textarea>
+        </div>
+
+        <!-- New Color Form -->
+        <div class="form-group">
+          <label for="colorName">Color Name:</label>
+          <input id="colorName" type="text" formControlName="colorName" class="form-control" placeholder="e.g. Red, Blue, Green">
+        </div>
+
+        <div class="form-group">
+          <label for="availableStock">Available Stock:</label>
+          <input id="availableStock" type="number" formControlName="availableStock" class="form-control" placeholder="Quantity">
+        </div>
+
+        <div class="cancel-link">
+          <button type="button" class="link-button cancel" (click)="toggleNewClothColor()">
+            <i class="fa fa-arrow-left"></i> Use Existing Color Instead
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!isFormValid()">
+          <i class="fa fa-upload"></i> Upload Image
+        </button>
+      </div>
+    </form>
+
+    <!-- Status Messages -->
+    <div class="status-messages">
+      <div *ngIf="successMessage" class="success-message">
+        <i class="fa fa-check-circle"></i> {{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fa fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+

@@ -1,63 +1,259 @@
-.image-upload {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #f9f9f9;
+.image-upload-container {
+  display: flex;
+  justify-content: center;
+  padding: 30px 20px;
 }
 
-  .image-upload h1 {
-    text-align: center;
-    margin-bottom: 20px;
+.upload-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 700px;
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 28px;
+}
+
+h2 {
+  color: #444;
+  font-size: 18px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.section {
+  margin-bottom: 30px;
+}
+
+/* File Upload Area */
+.file-upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+  .file-upload-area:hover {
+    border-color: #007bff;
+    background-color: #f0f7ff;
   }
 
-  .image-upload label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold; /* Make labels stand out */
+  .file-upload-area.has-file {
+    border-style: solid;
+    border-color: #28a745;
+    background-color: #f0fff4;
   }
 
-  .image-upload input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #777;
+}
+
+  .upload-placeholder i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #aaa;
   }
 
-  .image-upload button {
-    width: 100%;
-    background-color: #f4a261;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
+  .upload-placeholder p {
+    margin: 0;
+    font-size: 16px;
   }
 
-    .image-upload button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
+.image-preview {
+  width: 100%;
+  height: 100%;
+}
+
+  .image-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+  }
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+  .form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 1em;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.price-input {
+  position: relative;
+}
+
+.currency {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-weight: 500;
+}
+
+.price-input input {
+  padding-left: 45px;
+}
+
+/* Buttons and Links */
+.form-actions {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+
+.link-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+  padding: 5px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.2s;
+}
+
+  .link-button:hover {
+    color: #0056b3;
+  }
+
+  .link-button.cancel {
+    color: #6c757d;
+  }
+
+    .link-button.cancel:hover {
+      color: #5a6268;
     }
 
-  .image-upload .success {
-    color: green;
-    text-align: center;
-    margin-top: 10px;
+.add-new-links {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.cancel-link {
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* Status Messages */
+.status-messages {
+  margin-top: 20px;
+}
+
+.success-message, .error-message {
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+  .success-message i, .error-message i {
+    font-size: 18px;
   }
 
-.image-upload input[type="text"],
-.image-upload input[type="checkbox"] {
-  margin-bottom: 15px; /* Add spacing for new inputs */
-}
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .upload-card {
+    padding: 20px;
+  }
 
-.image-upload input[type="checkbox"] {
-  width: auto; /* Ensure the checkbox size is appropriate */
-  margin-right: 10px; /* Add spacing next to the label */
-}
+  h1 {
+    font-size: 24px;
+  }
 
-.image-upload label[for="isPrimary"] {
-  display: inline; /* Align checkbox label inline with the input */
-  font-weight: normal; /* Keep it light to differentiate from other labels */
+  .btn-primary {
+    width: 100%;
+  }
 }

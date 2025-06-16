@@ -1,4 +1,6 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5000/api',
+  production: true,
+  apiUrl: '/api', // Use relative path for same-server deployment
+  // If deploying to a separate server:
+  // apiUrl: 'https://your-production-api-domain.com/api',
 };

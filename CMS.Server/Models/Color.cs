@@ -6,6 +6,6 @@
         public int AvailiableStock { get; set; }
         public int ClothId { get; set; }
         public Cloth Cloth { get; set; }
-        public ICollection<Image>? Images { get; set; }
+        public Image Image { get; set; }
     }
 }

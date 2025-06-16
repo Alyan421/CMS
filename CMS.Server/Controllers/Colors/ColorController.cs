@@ -8,6 +8,7 @@ using CMS.Server.Services;
 using CMS.Server.Controllers.Colors.DTO;
 using System;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Server.Controllers.Colors
 {
@@ -25,6 +26,7 @@ namespace CMS.Server.Controllers.Colors
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAsync(ColorCreateDTO ColorCreateDTO)
         {
             try
@@ -77,6 +79,7 @@ namespace CMS.Server.Controllers.Colors
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAsync(ColorUpdateDTO colorUpdateDTO)
         {
             try
@@ -104,6 +107,7 @@ namespace CMS.Server.Controllers.Colors
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteColorAsync(int id)
         {
             try

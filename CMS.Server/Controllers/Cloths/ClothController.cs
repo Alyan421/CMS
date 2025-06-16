@@ -8,6 +8,7 @@ using CMS.Server.Services;
 using CMS.Server.Controllers.Cloths.DTO;
 using System;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Server.Controllers.Cloths
 {
@@ -25,6 +26,7 @@ namespace CMS.Server.Controllers.Cloths
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAsync(ClothCreateDTO clothCreateDTO)
         {
             try
@@ -42,7 +44,7 @@ namespace CMS.Server.Controllers.Cloths
                     return StatusCode(500, "An error occurred while creating thecloth.");
                 }
 
-                var clothDTO = _mapper.Map<ClothCreateDTO>(clothCreate);
+                var clothDTO = _mapper.Map<ClothGetDTO>(clothCreate);
                 return Ok(clothDTO);
             }
             catch (Exception ex)
@@ -77,6 +79,7 @@ namespace CMS.Server.Controllers.Cloths
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAsync(ClothUpdateDTO clothUpdateDTO)
         {
             try
@@ -104,6 +107,7 @@ namespace CMS.Server.Controllers.Cloths
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteClothAsync(int id)
         {
             try

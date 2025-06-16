@@ -1,10 +1,70 @@
-<div class="color-list">
-  <h1>Colors</h1>
-  <ul>
-    <li *ngFor="let color of colors">
-      <span>{{ color.colorName }}</span>
-      <span>Stock: {{ color.availiableStock }}</span>
-      <button (click)="deleteColor(color.id)">Delete</button>
-    </li>
-  </ul>
+<div class="color-list-container">
+  <header>
+    <h1>Colors Management</h1>
+  </header>
+
+  <div class="content-grid">
+    <!-- Left side: Form for adding/editing colors -->
+    <div class="form-section">
+      <div class="card">
+        <h2>{{ colorForm.value.id ? 'Edit' : 'Add New' }} Color</h2>
+        <form [formGroup]="colorForm" (ngSubmit)="colorForm.value.id ? updateColor() : addColor()">
+          <div class="form-group">
+            <label for="colorName">Color Name</label>
+            <input id="colorName" formControlName="colorName" placeholder="e.g. Red, Blue, Green" required>
+          </div>
+
+          <div class="form-group">
+            <label for="availiableStock">Available Stock</label>
+            <input id="availiableStock" type="number" formControlName="availiableStock" placeholder="Quantity" required>
+          </div>
+
+          <div class="form-group">
+            <label for="clothId">Cloth ID</label>
+            <input id="clothId" type="number" formControlName="clothId" placeholder="Associated cloth ID" required>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">{{ colorForm.value.id ? 'Update' : 'Add' }} Color</button>
+            <button type="button" class="btn-secondary" (click)="colorForm.reset()">Clear</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" *ngIf="selectedColor">
+        <h3>Selected Color Details</h3>
+        <div class="selected-item">
+          <p><strong>ID:</strong> {{ selectedColor.id }}</p>
+          <p><strong>Name:</strong> {{ selectedColor.colorName }}</p>
+          <p><strong>Stock:</strong> {{ selectedColor.availiableStock }}</p>
+          <p><strong>Cloth ID:</strong> {{ selectedColor.clothId }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right side: Color list -->
+    <div class="list-section">
+      <div class="card">
+        <h2>Color Inventory</h2>
+        <div class="search-bar">
+          <input type="text" placeholder="Search colors..." (input)="searchColors($event)">
+        </div>
+
+        <div class="color-grid">
+          <div class="color-item" *ngFor="let color of colors">
+            <div class="color-info">
+              <h3>{{ color.colorName }}</h3>
+              <p>Available: {{ color.availiableStock }}</p>
+              <p class="small">ID: {{ color.id }}</p>
+            </div>
+            <div class="color-actions">
+              <button class="btn-edit" (click)="editColor(color)">Edit</button>
+              <button class="btn-info" (click)="getColorById(color.id)">Details</button>
+              <button class="btn-delete" (click)="deleteColor(color.id)">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

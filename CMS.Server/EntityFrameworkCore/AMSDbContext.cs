@@ -68,12 +68,11 @@ namespace CMS.Server.EntityFrameworkCore
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.URL).IsRequired().HasMaxLength(500);
-                entity.Property(e => e.IsPrimary).IsRequired();
 
                 // Explicitly configure the relationship
                 entity.HasOne(i => i.Color) // Navigation property in Image
-                      .WithMany(c => c.Images) // Navigation property in Color
-                      .HasForeignKey(i => i.ColorId) // Foreign key in Image
+                      .WithOne(c => c.Image) // Navigation property in Color
+                      .HasForeignKey<Image>(i => i.ColorId) // Foreign key in Image
                       .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
             });
         }

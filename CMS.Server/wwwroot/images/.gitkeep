@@ -1,0 +1,2 @@
+   mkdir -p CMS.Server/wwwroot/images
+   touch CMS.Server/wwwroot/images/.gitkeep

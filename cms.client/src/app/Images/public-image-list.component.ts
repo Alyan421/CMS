@@ -1,69 +1,54 @@
 import { Component, OnInit } from '@angular/core';
-import { ImageService } from './image.service';
+import { ImageService } from '../Images/image.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ClothService } from '../Cloths/cloth.service';
 import { ColorService } from '../Colors/color.service';
 
 @Component({
-  selector: 'app-image-list',
-  templateUrl: './image-list.component.html',
-  styleUrls: ['./image-list.component.css'],
+  selector: 'app-public-image-list',
+  templateUrl: './public-image-list.component.html',
+  styleUrls: ['./public-image-list.component.css'],
   standalone: true,
   imports: [CommonModule, FormsModule],
 })
-export class ImageListComponent implements OnInit {
+export class PublicImageListComponent implements OnInit {
   images: any[] = [];
-  searchQuery: string = '';
+  filteredImages: any[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 30; // Updated to 30 images per page
-  cloths: any[] = [];
+  itemsPerPage: number = 30;
   colors: any[] = [];
-  selectedClothName: string = '';
   selectedColorName: string = '';
-  clothImages: any[] = [];
-  isDeleting: boolean = false;
-  viewMode: string = 'grid'; // 'grid' or 'list'
+  viewMode: string = 'grid';
   selectedImage: any = null;
-  colorsMap: Map<number, string> = new Map(); // Map colorId to colorName
+  colorsMap: Map<number, string> = new Map();
+  currency: string = 'PKR'; // Set currency to PKR
+
+  // Price filter properties
+  minPrice: number = 0;
+  maxPrice: number = 1000;
+  priceRange: { min: number, max: number } = { min: 0, max: 1000 };
+  isFilterActive: boolean = false;
 
   constructor(
     private imageService: ImageService,
-    private clothService: ClothService,
     private colorService: ColorService
   ) { }
 
   ngOnInit(): void {
     this.loadImages();
-    this.loadCloths();
     this.loadColors();
-  }
-
-  loadCloths(): void {
-    this.clothService.getAllCloths().subscribe((data) => {
-      this.cloths = data;
-    });
   }
 
   loadColors(): void {
     this.colorService.getAllColors().subscribe((data) => {
-      // Remove duplicates based on color name
       this.colors = data.filter(
         (color, index, self) =>
           index === self.findIndex((c) => c.colorName === color.colorName)
       );
 
-      // Create a map of colorId to colorName for quick lookups
       data.forEach(color => {
         this.colorsMap.set(color.id, color.colorName);
       });
-    });
-  }
-
-  filterByClothName(): void {
-    this.imageService.filterByClothName(this.selectedClothName).subscribe((data) => {
-      this.images = data;
-      this.currentPage = 1; // Reset to the first page
     });
   }
 
@@ -71,7 +56,8 @@ export class ImageListComponent implements OnInit {
     this.selectedColorName = colorName;
     this.imageService.filterByColorName(colorName).subscribe((data) => {
       this.images = data;
-      this.currentPage = 1; // Reset to the first page
+      this.applyFilters();
+      this.currentPage = 1;
     });
   }
 
@@ -79,52 +65,79 @@ export class ImageListComponent implements OnInit {
     this.selectedColorName = '';
     this.imageService.getAllImages().subscribe((data) => {
       this.images = data;
-      this.currentPage = 1; // Reset to the first page
+
+      // Set price range based on actual data
+      if (data.length > 0) {
+        const prices = data.map(img => img.price).filter(price => price !== undefined && price > 0);
+        if (prices.length > 0) {
+          this.minPrice = Math.floor(Math.min(...prices));
+          this.maxPrice = Math.ceil(Math.max(...prices));
+          this.priceRange = { min: this.minPrice, max: this.maxPrice };
+        }
+      }
+
+      this.applyFilters();
+      this.currentPage = 1;
     });
   }
 
-  deleteImage(id: number): void {
-    if (this.isDeleting) return; // Prevent multiple clicks
+  applyFilters(): void {
+    this.filteredImages = this.images.filter(image => {
+      // Apply price filter
+      const priceInRange = image.price >= this.priceRange.min &&
+        image.price <= this.priceRange.max;
 
-    this.isDeleting = true;
+      // Check if filter is active
+      this.isFilterActive = this.selectedColorName !== '' ||
+        this.priceRange.min > this.minPrice ||
+        this.priceRange.max < this.maxPrice;
 
-    if (confirm('Are you sure you want to delete this image?')) {
-      this.imageService.deleteImage(id).subscribe({
-        next: () => {
-          this.loadImages(); // Reload the images after deletion
-          this.isDeleting = false;
-        },
-        error: (error) => {
-          console.error('Error deleting image:', error);
-          alert('Failed to delete the image. Please try again.');
-          this.isDeleting = false;
-        }
-      });
+      return priceInRange;
+    });
+    this.currentPage = 1;
+  }
+
+  onColorFilterChange(): void {
+    if (this.selectedColorName) {
+      this.filterByColorName(this.selectedColorName);
     } else {
-      this.isDeleting = false;
+      // When "All Colors" is selected (empty value)
+      this.loadImages();
     }
+  }
+
+
+  onPriceFilterChange(): void {
+    this.applyFilters();
+  }
+
+  // Add method to clear filters
+  clearFilters(): void {
+    this.selectedColorName = '';
+    this.priceRange = { min: this.minPrice, max: this.maxPrice };
+    this.loadImages();
   }
 
   get paginatedImages(): any[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
-    return this.images.slice(start, start + this.itemsPerPage);
+    return this.filteredImages.slice(start, start + this.itemsPerPage);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.images.length / this.itemsPerPage);
+    return Math.ceil(this.filteredImages.length / this.itemsPerPage);
   }
 
   nextPage(): void {
-    if (this.currentPage * this.itemsPerPage < this.images.length) {
+    if (this.currentPage * this.itemsPerPage < this.filteredImages.length) {
       this.currentPage++;
-      window.scrollTo(0, 0); // Scroll to top when changing page
+      window.scrollTo(0, 0);
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      window.scrollTo(0, 0); // Scroll to top when changing page
+      window.scrollTo(0, 0);
     }
   }
 
@@ -134,7 +147,7 @@ export class ImageListComponent implements OnInit {
 
   viewImage(image: any): void {
     this.selectedImage = image;
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
+    document.body.style.overflow = 'hidden';
   }
 
   closeImageView(event: Event): void {
@@ -143,7 +156,7 @@ export class ImageListComponent implements OnInit {
       (event.target as Element).classList.contains('close-btn')
     ) {
       this.selectedImage = null;
-      document.body.style.overflow = ''; // Restore scrolling
+      document.body.style.overflow = '';
     }
   }
 
@@ -152,7 +165,6 @@ export class ImageListComponent implements OnInit {
   }
 
   getColorBackground(colorName: string): string {
-    // Map common color names to their hex values
     const colorMap: { [key: string]: string } = {
       'red': '#f44336',
       'blue': '#2196F3',
@@ -168,7 +180,6 @@ export class ImageListComponent implements OnInit {
       'cyan': '#00BCD4'
     };
 
-    // Try to match the color name with our map
     const lowerCaseName = colorName.toLowerCase();
     for (const [key, value] of Object.entries(colorMap)) {
       if (lowerCaseName.includes(key)) {
@@ -176,22 +187,15 @@ export class ImageListComponent implements OnInit {
       }
     }
 
-    // Default color if no match
     return '#6c757d';
   }
 
   getContrastColor(colorName: string): string {
     const bgColor = this.getColorBackground(colorName);
-
-    // Convert hex to RGB
     const r = parseInt(bgColor.slice(1, 3), 16);
     const g = parseInt(bgColor.slice(3, 5), 16);
     const b = parseInt(bgColor.slice(5, 7), 16);
-
-    // Calculate brightness
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-
-    // Return white for dark colors, black for light colors
     return brightness > 125 ? '#000000' : '#FFFFFF';
   }
 }

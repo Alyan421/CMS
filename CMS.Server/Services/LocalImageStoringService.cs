@@ -1,11 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
-namespace CMS.Server.Services
+﻿namespace CMS.Server.Services
 {
     public class LocalImageStorageService : IImageStorageService
     {
@@ -53,12 +46,33 @@ namespace CMS.Server.Services
         {
             if (string.IsNullOrEmpty(imageUrl)) return;
 
-            var filePath = Path.Combine(_env.WebRootPath, imageUrl.TrimStart('/'));
-
-            if (File.Exists(filePath))
+            try
             {
-                await Task.Run(() => File.Delete(filePath));
+                // Extract the filename from the URL
+                Uri uri = new Uri(imageUrl);
+                string relativePath = uri.AbsolutePath;  // This will get the path after the domain, like "/images/filename.jpg"
+
+                // Combine with web root path to get the full physical file path
+                string filePath = Path.Combine(_env.WebRootPath, relativePath.TrimStart('/'));
+
+                Console.WriteLine($"Attempting to delete file at: {filePath}");
+
+                if (File.Exists(filePath))
+                {
+                    await Task.Run(() => File.Delete(filePath));
+                    Console.WriteLine($"Successfully deleted file: {filePath}");
+                }
+                else
+                {
+                    Console.WriteLine($"File not found at path: {filePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't throw it to prevent disrupting the application flow
+                Console.WriteLine($"Error deleting image file: {ex.Message}");
             }
         }
+
     }
 }

@@ -12,10 +12,11 @@ namespace CMS.Server.Services
         {
             var claims = new[]
             {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role),
-            new Claim("UserId", user.Id.ToString()),
-        };
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("role", user.Role),  // Added simpler claim name
+                new Claim("UserId", user.Id.ToString()),
+            };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
             if (key.KeySize < 256)
@@ -33,5 +34,4 @@ namespace CMS.Server.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-
 }

@@ -67,6 +67,7 @@ namespace CMS.Server.Managers.Cloths
                 }
 
                 await _repository.DeleteAsync(cloth);
+                await _repository.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)

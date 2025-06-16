@@ -1,15 +1,34 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, NavigationEnd, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
+import { HeaderComponent } from './shared/header.component';
 import { FooterComponent } from './shared/footer.component';
-import { HeaderComponent } from './shared/header.component'; // Import HeaderComponent
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, FooterComponent, HeaderComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    HeaderComponent,
+    FooterComponent
+  ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Clothing Shop';
+  showHeaderFooter = true;
+
+  constructor(private router: Router) { }
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      // Hide header/footer on login and register pages
+      this.showHeaderFooter = !(['/login', '/register'].includes(event.urlAfterRedirects));
+    });
+  }
 }

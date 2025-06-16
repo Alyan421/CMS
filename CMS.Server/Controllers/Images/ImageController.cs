@@ -8,6 +8,7 @@ using CMS.Server.Services;
 using CMS.Server.Controllers.Images.DTO;
 using System;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Server.Controllers.Images
 {
@@ -47,6 +48,7 @@ namespace CMS.Server.Controllers.Images
 
  //       [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("upload")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Upload([FromForm] ImageCreateDTO dto)
         {
             if (dto.ImageFile == null || dto.ImageFile.Length == 0)
@@ -58,6 +60,7 @@ namespace CMS.Server.Controllers.Images
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromForm] ImageUpdateDTO dto, [FromForm] IFormFile image = null)
         {
             dto.Id = id;
@@ -66,6 +69,7 @@ namespace CMS.Server.Controllers.Images
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _manager.DeleteAsync(id);
@@ -73,6 +77,7 @@ namespace CMS.Server.Controllers.Images
         }
 
         [HttpGet("filter-by-cloth-name/{clothName}")]
+
         public async Task<IActionResult> FilterByClothName(string clothName)
         {
             var images = await _manager.FilterByClothNameAsync(clothName);

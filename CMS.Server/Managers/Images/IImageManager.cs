@@ -1,10 +1,10 @@
-﻿using CMS.Server.Models;
-using Microsoft.AspNetCore.Mvc;
-using CMS.Server.Controllers.Images.DTO;
+﻿using CMS.Server.Controllers.Images.DTO;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CMS.Server.Managers.Images
 {
-    // IImageManager.cs
     public interface IImageManager
     {
         Task<List<ImageGetDTO>> GetAllAsync();

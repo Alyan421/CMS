@@ -1,6 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api', // Use relative path for same-server deployment
-  // If deploying to a separate server:
-  // apiUrl: 'https://your-production-api-domain.com/api',
+  apiUrl: 'https://cms-app.onrender.com/api', // Replace with your actual Render backend URL
 };

@@ -23,11 +23,10 @@ builder.Services.AddControllers()
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); // Prevent reference loop issues
 
 // Add Service
-builder.Services.AddScoped<IImageStorageService, LocalImageStorageService>();
-
+builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
 // Configure DbContext with SQL Server
 builder.Services.AddDbContext<AMSDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register Repository and Generic Repository
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); // Generic repository for any model
@@ -106,6 +105,45 @@ builder.Services.AddSwaggerGen(c =>
 //Register Automappers
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // Automatically scans for mapping profiles
 
+// Handle environment-specific configurations
+if (builder.Environment.IsProduction())
+{
+    // Override Cloudinary configuration with environment variables
+    builder.Configuration["Cloudinary:CloudName"] = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+    builder.Configuration["Cloudinary:ApiKey"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+    builder.Configuration["Cloudinary:ApiSecret"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+
+    // Get allowed origins from environment variable
+    var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
+        ?? new[] { "http://localhost:4200" };
+
+    // Add CORS services with environment-based configuration
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAngularApp", policy =>
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+    });
+}
+else
+{
+    // Development CORS configuration
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAngularApp", policy =>
+        {
+            policy.WithOrigins("http://localhost:4200")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+    });
+}
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -118,15 +156,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Use CORS before other middleware
+app.UseCors("AllowAngularApp");
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseIpRateLimiting();
 
 app.MapControllers();
-
 app.MapFallbackToFile("/index.html");
 
 app.Run();

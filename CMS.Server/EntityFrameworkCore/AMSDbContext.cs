@@ -17,7 +17,20 @@ namespace CMS.Server.EntityFrameworkCore
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             base.OnModelCreating(modelBuilder);
+
+            // Make all table names lowercase for PostgreSQL compatibility
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                entity.SetTableName(entity.GetTableName().ToLower());
+
+                // Convert column names to lowercase as well
+                foreach (var property in entity.GetProperties())
+                {
+                    property.SetColumnName(property.GetColumnName().ToLower());
+                }
+            }
 
             // Configure User Entity
             modelBuilder.Entity<User>(entity =>
@@ -75,6 +88,7 @@ namespace CMS.Server.EntityFrameworkCore
                       .HasForeignKey<Image>(i => i.ColorId) // Foreign key in Image
                       .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
             });
+
         }
     }
 }

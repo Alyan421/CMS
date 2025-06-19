@@ -146,8 +146,8 @@ else
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
+// app.UseDefaultFiles();
+// app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -165,6 +165,6 @@ app.UseAuthorization();
 app.UseIpRateLimiting();
 
 app.MapControllers();
-app.MapFallbackToFile("/index.html");
+//app.MapFallbackToFile("/index.html");
 
 app.Run();

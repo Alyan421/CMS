@@ -22,8 +22,22 @@ builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); // Prevent reference loop issues
 
-// Add Service
-builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
+// Configure image storage service based on configuration
+var storageProvider = builder.Configuration["Storage:Provider"] ?? "Cloudinary";
+if (string.Equals(storageProvider, "Local", StringComparison.OrdinalIgnoreCase))
+{
+    // Register local file storage
+    builder.Services.AddScoped<IImageStorageService, LocalImageStorageService>();
+
+    // Enable static files for serving local images
+    builder.Services.AddDirectoryBrowser();
+}
+else
+{
+    // Register Cloudinary storage (default)
+    builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
+}
+
 // Configure DbContext with SQL Server
 builder.Services.AddDbContext<AMSDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -146,8 +160,17 @@ else
 
 var app = builder.Build();
 
-// app.UseDefaultFiles();
-// app.UseStaticFiles();
+// Enable static files for local image storage if using local provider
+if (string.Equals(storageProvider, "Local", StringComparison.OrdinalIgnoreCase))
+{
+    app.UseStaticFiles(); // Enable serving static files
+
+    // Optional: Enable directory browsing for debugging purposes
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseDirectoryBrowser();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -3,6 +3,7 @@ import { ImageService } from '../Images/image.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ColorService } from '../Colors/color.service';
+import { ClothService } from '../Cloths/cloth.service';
 
 @Component({
   selector: 'app-public-image-list',
@@ -17,10 +18,13 @@ export class PublicImageListComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 30;
   colors: any[] = [];
+  cloths: any[] = []; // Add cloths array
   selectedColorName: string = '';
+  selectedClothName: string = ''; // Add selected cloth name
   viewMode: string = 'grid';
   selectedImage: any = null;
   colorsMap: Map<number, string> = new Map();
+  clothsMap: Map<number, string> = new Map(); // Add cloths map
   currency: string = 'PKR'; // Set currency to PKR
 
   // Price filter properties
@@ -31,12 +35,14 @@ export class PublicImageListComponent implements OnInit {
 
   constructor(
     private imageService: ImageService,
-    private colorService: ColorService
+    private colorService: ColorService,
+    private clothService: ClothService // Add cloth service
   ) { }
 
   ngOnInit(): void {
     this.loadImages();
     this.loadColors();
+    this.loadCloths(); // Load cloths on init
   }
 
   loadColors(): void {
@@ -52,6 +58,18 @@ export class PublicImageListComponent implements OnInit {
     });
   }
 
+  // Add method to load cloths
+  loadCloths(): void {
+    this.clothService.getAllCloths().subscribe((data) => {
+      this.cloths = data;
+
+      // Create a map of clothId to clothName for quick lookups
+      data.forEach(cloth => {
+        this.clothsMap.set(cloth.id, cloth.name);
+      });
+    });
+  }
+
   filterByColorName(colorName: string): void {
     this.selectedColorName = colorName;
     this.imageService.filterByColorName(colorName).subscribe((data) => {
@@ -61,8 +79,19 @@ export class PublicImageListComponent implements OnInit {
     });
   }
 
+  // Add method to filter by cloth name
+  filterByClothName(clothName: string): void {
+    this.selectedClothName = clothName;
+    this.imageService.filterByClothName(clothName).subscribe((data) => {
+      this.images = data;
+      this.applyFilters();
+      this.currentPage = 1;
+    });
+  }
+
   loadImages(): void {
     this.selectedColorName = '';
+    this.selectedClothName = '';
     this.imageService.getAllImages().subscribe((data) => {
       this.images = data;
 
@@ -89,6 +118,7 @@ export class PublicImageListComponent implements OnInit {
 
       // Check if filter is active
       this.isFilterActive = this.selectedColorName !== '' ||
+        this.selectedClothName !== '' || // Add cloth name to filter check
         this.priceRange.min > this.minPrice ||
         this.priceRange.max < this.maxPrice;
 
@@ -106,14 +136,24 @@ export class PublicImageListComponent implements OnInit {
     }
   }
 
+  // Add method for cloth filter change
+  onClothFilterChange(): void {
+    if (this.selectedClothName) {
+      this.filterByClothName(this.selectedClothName);
+    } else {
+      // When "All Cloths" is selected (empty value)
+      this.loadImages();
+    }
+  }
 
   onPriceFilterChange(): void {
     this.applyFilters();
   }
 
-  // Add method to clear filters
+  // Update clear filters to include cloth filter
   clearFilters(): void {
     this.selectedColorName = '';
+    this.selectedClothName = '';
     this.priceRange = { min: this.minPrice, max: this.maxPrice };
     this.loadImages();
   }
@@ -162,6 +202,11 @@ export class PublicImageListComponent implements OnInit {
 
   getColorName(colorId: number): string {
     return this.colorsMap.get(colorId) || 'Unknown';
+  }
+
+  // Add method to get cloth name
+  getClothName(clothId: number): string {
+    return this.clothsMap.get(clothId) || 'Unknown';
   }
 
   getColorBackground(colorName: string): string {

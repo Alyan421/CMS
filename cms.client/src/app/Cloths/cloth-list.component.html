@@ -50,11 +50,16 @@
       <div class="card">
         <h2>Clothing Inventory</h2>
         <div class="search-bar">
-          <input type="text" placeholder="Search clothes..." (input)="searchCloths($event)">
+          <div class="search-input-container">
+            <input type="text" placeholder="Search clothes..." [(ngModel)]="searchTerm">
+            <button class="search-button" (click)="searchClothsButton()">
+              <i class="fas fa-search"></i> Search
+            </button>
+          </div>
         </div>
 
         <div class="cloth-grid">
-          <div class="cloth-item" *ngFor="let cloth of cloths">
+          <div class="cloth-item" *ngFor="let cloth of filteredCloths">
             <div class="cloth-info">
               <h3>{{ cloth.name }}</h3>
               <p class="price">Rs {{ cloth.price }}</p>

@@ -2,6 +2,7 @@
 using CMS.Server.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CMS.Server.Migrations
 {
     [DbContext(typeof(AMSDbContext))]
-    partial class AMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250625154441_AddClothColorManyToMany")]
+    partial class AddClothColorManyToMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,10 +34,6 @@ namespace CMS.Server.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("colorid");
 
-                    b.Property<int>("AvailableStock")
-                        .HasColumnType("integer")
-                        .HasColumnName("availablestock");
-
                     b.HasKey("ClothId", "ColorId");
 
                     b.HasIndex("ColorId");
@@ -51,6 +50,10 @@ namespace CMS.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AvailiableStock")
+                        .HasColumnType("integer")
+                        .HasColumnName("availiablestock");
+
                     b.Property<string>("ColorName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -60,6 +63,33 @@ namespace CMS.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("colors");
+                });
+
+            modelBuilder.Entity("CMS.Server.Models.Image", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ColorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("colorid");
+
+                    b.Property<string>("URL")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("url");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColorId")
+                        .IsUnique();
+
+                    b.ToTable("images");
                 });
 
             modelBuilder.Entity("CMS.Server.Models.User", b =>
@@ -128,37 +158,6 @@ namespace CMS.Server.Migrations
                     b.ToTable("cloths");
                 });
 
-            modelBuilder.Entity("Image", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClothId")
-                        .HasColumnType("integer")
-                        .HasColumnName("clothid");
-
-                    b.Property<int>("ColorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("colorid");
-
-                    b.Property<string>("URL")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("url");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClothId", "ColorId")
-                        .IsUnique();
-
-                    b.ToTable("images");
-                });
-
             modelBuilder.Entity("CMS.Server.Models.ClothColor", b =>
                 {
                     b.HasOne("Cloth", "Cloth")
@@ -178,26 +177,23 @@ namespace CMS.Server.Migrations
                     b.Navigation("Color");
                 });
 
-            modelBuilder.Entity("Image", b =>
+            modelBuilder.Entity("CMS.Server.Models.Image", b =>
                 {
-                    b.HasOne("CMS.Server.Models.ClothColor", "ClothColor")
+                    b.HasOne("CMS.Server.Models.Color", "Color")
                         .WithOne("Image")
-                        .HasForeignKey("Image", "ClothId", "ColorId")
+                        .HasForeignKey("CMS.Server.Models.Image", "ColorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ClothColor");
-                });
-
-            modelBuilder.Entity("CMS.Server.Models.ClothColor", b =>
-                {
-                    b.Navigation("Image")
-                        .IsRequired();
+                    b.Navigation("Color");
                 });
 
             modelBuilder.Entity("CMS.Server.Models.Color", b =>
                 {
                     b.Navigation("ClothColors");
+
+                    b.Navigation("Image")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Cloth", b =>

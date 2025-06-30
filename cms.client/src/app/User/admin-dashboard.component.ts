@@ -1,70 +1,98 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from './user.service';
-import { ImageService } from '../Images/image.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { AuthService } from '../Authorization/auth.service';
 import { ColorService } from '../Colors/color.service';
 import { ClothService } from '../Cloths/cloth.service';
-import { forkJoin, catchError, of } from 'rxjs';
-import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { AuthService } from '../Authorization/auth.service';
+import { ImageService } from '../Images/image.service';
+import { StockService } from '../Stock/stock.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-component.dashboard.css'],
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [
+    CommonModule,
+    RouterModule
+  ]
 })
 export class AdminDashboardComponent implements OnInit {
-  totalUsers: number = 0;
-  totalImages: number = 0;
-  totalColors: number = 0;
-  totalCloths: number = 0;
+  adminName: string = 'Admin'; // Provide a default value
+  lastLogin: string = '';
+  cardCount = {
+    colors: 0,
+    cloths: 0,
+    images: 0,
+    stock: 0
+  };
   isLoading: boolean = true;
-  error: string | null = null;
 
   constructor(
-    private userService: UserService,
-    private imageService: ImageService,
+    private authService: AuthService,
     private colorService: ColorService,
     private clothService: ClothService,
-    private authService: AuthService
+    private imageService: ImageService,
+    private stockService: StockService
   ) { }
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    // Get current user info
+    try {
+      const user = this.authService.getCurrentUser();
+      if (user) {
+        this.adminName = user.name || user.email || 'Admin';
+        this.lastLogin = new Date().toLocaleString(); // Or get from user profile if available
+      }
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      // Keep the default admin name
+    }
+
+    // Fetch real stats from services
+    this.fetchDashboardStats();
   }
 
-  loadDashboardData(): void {
+  private fetchDashboardStats(): void {
     this.isLoading = true;
-    this.error = null;
 
-    // Load all statistics in parallel with error handling for each
+    // Use forkJoin to make parallel requests
     forkJoin({
-      users: this.userService.getAllUsers().pipe(catchError(() => of([]))),
-      images: this.imageService.getAllImages().pipe(catchError(() => of([]))),
-      colors: this.colorService.getAllColors().pipe(catchError(() => of([]))),
-      cloths: this.clothService.getAllCloths().pipe(catchError(() => of([])))
+      colors: this.colorService.getAllColors().pipe(catchError(error => {
+        console.error('Error fetching colors:', error);
+        return of([]);
+      })),
+      cloths: this.clothService.getAllCloths().pipe(catchError(error => {
+        console.error('Error fetching cloths:', error);
+        return of([]);
+      })),
+      images: this.imageService.getAllImages().pipe(catchError(error => {
+        console.error('Error fetching images:', error);
+        return of([]);
+      })),
+      stocks: this.stockService.getAllStock().pipe(catchError(error => {
+        console.error('Error fetching stock:', error);
+        return of([]);
+      }))
     }).subscribe({
       next: (results) => {
-        this.totalUsers = results.users.length;
-        this.totalImages = results.images.length;
-        this.totalColors = results.colors.length;
-        this.totalCloths = results.cloths.length;
+        this.cardCount = {
+          colors: results.colors.length,
+          cloths: results.cloths.length,
+          images: results.images.length,
+          stock: results.stocks.length
+        };
         this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Error loading dashboard data:', err);
-        this.error = 'Failed to load dashboard data. Please try again later.';
+      error: (error) => {
+        console.error('Error fetching dashboard stats:', error);
         this.isLoading = false;
       },
       complete: () => {
         this.isLoading = false;
       }
     });
-  }
-
-  refreshData(): void {
-    this.loadDashboardData();
   }
 }

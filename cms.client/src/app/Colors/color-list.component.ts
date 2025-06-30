@@ -1,29 +1,38 @@
 import { Component, OnInit } from '@angular/core';
 import { ColorService } from './color.service';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NotificationService } from '../core/notification.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-color-list',
   templateUrl: './color-list.component.html',
   styleUrls: ['./color-list.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule
+  ]
 })
 export class ColorListComponent implements OnInit {
   colors: any[] = [];
-  selectedColor: any = null;
   colorForm: FormGroup;
-  filteredColors: any[] = [];
+  isEditing = false;
+  selectedColorId: number | null = null;
+  isLoading = true;
   searchTerm: string = '';
+  filteredColors: any[] = [];
 
-  constructor(private colorService: ColorService, private fb: FormBuilder) {
-    // Initialize the form with the correct order of properties
+  constructor(
+    private colorService: ColorService,
+    private fb: FormBuilder,
+    private notification: NotificationService
+  ) {
     this.colorForm = this.fb.group({
-      id: [null],
-      clothId: [''],
-      colorName: [''],
-      availiableStock: ['']
+      colorName: ['', Validators.required]
     });
   }
 
@@ -32,82 +41,111 @@ export class ColorListComponent implements OnInit {
   }
 
   loadColors(): void {
-    this.colorService.getAllColors().subscribe((data) => {
-      this.colors = data;
-      this.filteredColors = data; // Initialize filtered list
+    this.isLoading = true;
+    this.colorService.getAllColors().subscribe({
+      next: (data) => {
+        this.colors = data;
+        this.filterColors();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.notification.error('Failed to load colors');
+        console.error('Error loading colors:', error);
+        this.isLoading = false;
+      }
     });
   }
 
-  getColorById(id: number): void {
-    this.colorService.getColorById(id).subscribe(data => {
-      this.selectedColor = data;
-      // Make sure the form is updated with the correct order
-      this.colorForm.patchValue({
-        id: data.id,
-        clothId: data.clothId,
-        colorName: data.colorName,
-        availiableStock: data.availiableStock
+  onSubmit(): void {
+    if (this.colorForm.invalid) {
+      this.notification.error('Please fill in all required fields');
+      return;
+    }
+
+    const colorData = this.colorForm.value;
+
+    if (this.isEditing && this.selectedColorId) {
+      // Update color
+      colorData.id = this.selectedColorId;
+      this.colorService.updateColor(colorData).subscribe({
+        next: (response) => {
+          this.notification.success('Color updated successfully');
+          this.resetForm();
+          this.loadColors();
+        },
+        error: (error) => {
+          this.notification.error('Failed to update color');
+          console.error('Error updating color:', error);
+        }
       });
-    });
-  }
-
-  addColor(): void {
-    // Create a properly ordered object for API submission
-    const colorData = {
-      clothId: this.colorForm.value.clothId,
-      colorName: this.colorForm.value.colorName,
-      availiableStock: this.colorForm.value.availiableStock
-    };
-
-    this.colorService.createColor(colorData).subscribe(() => {
-      this.loadColors();
-      this.colorForm.reset();
-    });
-  }
-
-  updateColor(): void {
-    const id = this.colorForm.value.id;
-    // Create a properly ordered object for API submission
-    const colorData = {
-      id: id,
-      clothId: this.colorForm.value.clothId,
-      colorName: this.colorForm.value.colorName,
-      availiableStock: this.colorForm.value.availiableStock
-    };
-
-    this.colorService.updateColor(colorData).subscribe(() => {
-      this.loadColors();
-      this.colorForm.reset();
-    });
+    } else {
+      // Create color
+      this.colorService.createColor(colorData).subscribe({
+        next: (response) => {
+          this.notification.success('Color created successfully');
+          this.resetForm();
+          this.loadColors();
+        },
+        error: (error) => {
+          this.notification.error('Failed to create color');
+          console.error('Error creating color:', error);
+        }
+      });
+    }
   }
 
   editColor(color: any): void {
-    this.selectedColor = color;
-    // Make sure the form is updated with the correct order
+    this.isEditing = true;
+    this.selectedColorId = color.id;
+
     this.colorForm.patchValue({
-      id: color.id,
-      clothId: color.clothId,
-      colorName: color.colorName,
-      availiableStock: color.availiableStock
+      colorName: color.colorName
     });
   }
 
-  deleteColor(id: number): void {
+  deleteColor(colorId: number): void {
     if (confirm('Are you sure you want to delete this color?')) {
-      this.colorService.deleteColor(id).subscribe(() => {
-        this.loadColors();
+      this.colorService.deleteColor(colorId).subscribe({
+        next: () => {
+          this.notification.success('Color deleted successfully');
+          this.loadColors();
+          if (this.selectedColorId === colorId) {
+            this.resetForm();
+          }
+        },
+        error: (error) => {
+          this.notification.error('Failed to delete color');
+          console.error('Error deleting color:', error);
+        }
       });
     }
   }
 
-  searchColors(event: any): void {
-    this.searchTerm = event.target.value.toLowerCase();
-    if (this.searchTerm) {
-      this.filteredColors = this.colors.filter(color =>
-        color.colorName.toLowerCase().includes(this.searchTerm)
-      );
-    } else {
+  resetForm(): void {
+    this.isEditing = false;
+    this.selectedColorId = null;
+    this.colorForm.reset({
+      colorName: ''
+    });
+  }
+
+  onSearch(): void {
+    this.filterColors();
+  }
+
+  filterColors(): void {
+    if (!this.searchTerm) {
       this.filteredColors = this.colors;
+    } else {
+      const term = this.searchTerm.toLowerCase();
+      this.filteredColors = this.colors.filter(color =>
+        color.colorName.toLowerCase().includes(term)
+      );
     }
+  }
+
+  // Navigate to stock management for this color
+  navigateToStockManagement(colorId: number): void {
+    // This will be handled by the router link in the template
   }
 }

@@ -1,5 +1,4 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { LoginComponent } from './Authorization/login.component';
 import { RegisterComponent } from './Authorization/register.component';
 import { ImageUploadComponent } from './Images/image-upload.component';
@@ -13,6 +12,7 @@ import { AuthGuard } from './Authorization/auth.guard';
 import { ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from './Authorization/auth.service';
+import { StockManagementComponent } from './Stock/stock-management.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -23,6 +23,12 @@ export const routes: Routes = [
   { path: 'images', component: ImageListComponent, canActivate: [AuthGuard], data: { role: 'Admin' } },
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard], data: { role: 'Admin' } },
   { path: 'public-gallery', component: PublicImageListComponent },
+  {
+    path: 'admin/stock',
+    component: StockManagementComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'Admin' }
+  },
   {
     path: '',
     canActivate: [AuthGuard],
@@ -44,9 +50,3 @@ export const routes: Routes = [
   },
   { path: '**', component: NotFoundComponent },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
-})
-export class AppRoutingModule { }

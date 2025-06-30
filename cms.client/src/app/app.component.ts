@@ -26,7 +26,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
+    ).subscribe((event: any) => {
       // Hide header/footer on login and register pages
       this.showHeaderFooter = !(['/login', '/register'].includes(event.urlAfterRedirects));
     });

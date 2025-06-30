@@ -1,88 +1,46 @@
-﻿using CMS.Server.Models;
+﻿using AutoMapper;
+using CMS.Server.Controllers.Colors.DTO;
+using CMS.Server.Models;
 using CMS.Server.Repository;
-using CMS.Server.Services;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Server.Managers.Colors
 {
     public class ColorManager : IColorManager
     {
-        private readonly IGenericRepository<Color> _repository;
-        private readonly IGenericRepository<Cloth> _clothRepository;
-        private readonly IGenericRepository<Image> _imageRepository;
+        private readonly IGenericRepository<Color> _colorRepository;
+        private readonly IGenericRepository<ClothColor> _clothColorRepository;
+        private readonly IMapper _mapper;
 
-        public ColorManager(IGenericRepository<Color> repository, IGenericRepository<Cloth> clothRepository,IGenericRepository<Image> imageRepository)
+        public ColorManager(
+            IGenericRepository<Color> colorRepository,
+            IGenericRepository<ClothColor> clothColorRepository,
+            IMapper mapper)
         {
-            _repository = repository;
-            _clothRepository = clothRepository;
-            _imageRepository = imageRepository;
+            _colorRepository = colorRepository;
+            _clothColorRepository = clothColorRepository;
+            _mapper = mapper;
         }
 
-        public async Task<Color> CreateColorAsync(Color color)
+        public async Task<List<Color>> GetAllColorsAsync()
         {
             try
             {
-                var existingCloth = await _clothRepository.GetByIdAsync(color.ClothId);
-                if (existingCloth == null)
-                {
-                    throw new KeyNotFoundException("Cloth not found.");
-                }
-                Console.WriteLine(existingCloth);
-                await _repository.AddAsync(color);
-                return color;
+                var query = _colorRepository.GetDbSet()
+                    .Include(c => c.ClothColors)
+                    .ThenInclude(cc => cc.Cloth);
+
+                return (await _colorRepository.GetListAsync(c => true)).ToList();
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while creating the color.", ex);
-            }
-        }
-
-        public async Task<Color> UpdateColorAsync(Color color)
-        {
-            try
-            {
-                await _repository.UpdateAsync(color);
-                return color;
-            }
-            catch (Exception ex)
-            {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while updating the color.", ex);
-            }
-        }
-
-        public async Task DeleteColorAsync(int id)
-        {
-            try
-            {
-                var color = await _repository.GetByIdAsync(id);
-                if (color == null)
-                {
-                    throw new KeyNotFoundException("Color not found.");
-                }
-
-                while (true)
-                {
-                    var image = await _imageRepository.GetDbSet().FirstOrDefaultAsync(i => i.ColorId == id);
-                    if (image == null) break;
-                    else
-                    {
-                        await _imageRepository.DeleteAsync(image);
-                        await _imageRepository.SaveChangesAsync();
-                    }
-                }
-
-                await _repository.DeleteAsync(color);
-                await _repository.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error occurred while deleting the color.", ex);
+                // Log the exception
+                throw new Exception("Error retrieving colors", ex);
             }
         }
 
@@ -90,25 +48,108 @@ namespace CMS.Server.Managers.Colors
         {
             try
             {
-                return await _repository.GetByIdAsync(id);
+                var color = await _colorRepository.GetByIdAsync(id);
+
+                if (color == null)
+                {
+                    throw new KeyNotFoundException($"Color with ID {id} not found");
+                }
+
+                return color;
+            }
+            catch (KeyNotFoundException)
+            {
+                // Rethrow key not found exceptions as-is
+                throw;
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while retrieving the color by ID.", ex);
+                // Log the exception
+                throw new Exception($"Error retrieving color with ID {id}", ex);
             }
         }
 
-        public async Task<IEnumerable<Color>> GetAllColorsAsync()
+        public async Task<Color> CreateColorAsync(ColorCreateDTO colorCreateDTO)
         {
             try
             {
-                return await _repository.GetAllAsync();
+                // Map DTO to entity
+                var color = _mapper.Map<Color>(colorCreateDTO);
+
+                await _colorRepository.AddAsync(color);
+                await _colorRepository.SaveChangesAsync();
+
+                // Return the created color
+                return await GetColorByIdAsync(color.Id);
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while retrieving all colors.", ex);
+                // Log the exception
+                throw new Exception("Error creating color", ex);
+            }
+        }
+
+        public async Task<Color> UpdateColorAsync(ColorUpdateDTO colorUpdateDTO)
+        {
+            try
+            {
+                var color = await _colorRepository.GetByIdAsync(colorUpdateDTO.Id);
+                if (color == null)
+                {
+                    throw new KeyNotFoundException($"Color with ID {colorUpdateDTO.Id} not found");
+                }
+
+                // Update properties
+                _mapper.Map(colorUpdateDTO, color);
+                await _colorRepository.UpdateAsync(color);
+                await _colorRepository.SaveChangesAsync();
+
+                // Return the updated color
+                return await GetColorByIdAsync(color.Id);
+            }
+            catch (KeyNotFoundException)
+            {
+                // Rethrow key not found exceptions as-is
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                throw new Exception($"Error updating color with ID {colorUpdateDTO.Id}", ex);
+            }
+        }
+
+        public async Task<bool> DeleteColorAsync(int id)
+        {
+            try
+            {
+                var color = await _colorRepository.GetByIdAsync(id);
+                if (color == null)
+                {
+                    return false; // Color not found
+                }
+
+                // Check if color is associated with any cloths
+                var hasAssociatedCloths = await _clothColorRepository.ExistsAsync(cc => cc.ColorId == id);
+                if (hasAssociatedCloths)
+                {
+                    throw new InvalidOperationException("Cannot delete color as it is associated with one or more cloths. Please remove these associations first.");
+                }
+
+                await _colorRepository.DeleteAsync(color);
+                await _colorRepository.SaveChangesAsync();
+
+                return true; // Successfully deleted
+            }
+            catch (InvalidOperationException)
+            {
+                // Rethrow business rule violations as-is
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                throw new Exception($"Error deleting color with ID {id}", ex);
             }
         }
     }

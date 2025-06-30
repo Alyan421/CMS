@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ClothService } from './cloth.service';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-cloth-list',
   templateUrl: './cloth-list.component.html',
   styleUrls: ['./cloth-list.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
 })
 export class ClothListComponent implements OnInit {
   cloths: any[] = [];
@@ -102,10 +102,20 @@ export class ClothListComponent implements OnInit {
 
   searchCloths(event: any): void {
     this.searchTerm = event.target.value.toLowerCase();
+    this.applySearch();
+  }
+
+  // New method for search button click
+  searchClothsButton(): void {
+    this.applySearch();
+  }
+
+  // Common search functionality
+  private applySearch(): void {
     if (this.searchTerm) {
       this.filteredCloths = this.cloths.filter(cloth =>
-        cloth.name.toLowerCase().includes(this.searchTerm) ||
-        cloth.description.toLowerCase().includes(this.searchTerm)
+        cloth.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        cloth.description.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     } else {
       this.filteredCloths = this.cloths;

@@ -4,13 +4,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClothService } from '../Cloths/cloth.service';
 import { ColorService } from '../Colors/color.service';
+import { ImageUploadComponent } from './image-upload.component';
 
 @Component({
   selector: 'app-image-list',
   templateUrl: './image-list.component.html',
   styleUrls: ['./image-list.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImageUploadComponent],
 })
 export class ImageListComponent implements OnInit {
   images: any[] = [];
@@ -26,6 +27,10 @@ export class ImageListComponent implements OnInit {
   viewMode: string = 'grid'; // 'grid' or 'list'
   selectedImage: any = null;
   colorsMap: Map<number, string> = new Map(); // Map colorId to colorName
+
+  // New properties for update functionality
+  showUpdateModal: boolean = false;
+  imageToUpdate: any = null;
 
   constructor(
     private imageService: ImageService,
@@ -103,6 +108,26 @@ export class ImageListComponent implements OnInit {
     } else {
       this.isDeleting = false;
     }
+  }
+
+  // New method to handle updating an image
+  updateImage(image: any): void {
+    this.imageToUpdate = image;
+    this.showUpdateModal = true;
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+  }
+
+  // Close the update modal
+  closeUpdateModal(): void {
+    this.showUpdateModal = false;
+    this.imageToUpdate = null;
+    document.body.style.overflow = ''; // Restore scrolling
+  }
+
+  // Handle update completion
+  onUpdateComplete(): void {
+    this.closeUpdateModal();
+    this.loadImages(); // Refresh the image list
   }
 
   get paginatedImages(): any[] {

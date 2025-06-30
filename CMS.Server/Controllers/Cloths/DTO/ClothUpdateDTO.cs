@@ -1,10 +1,18 @@
-﻿namespace CMS.Server.Controllers.Cloths.DTO
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CMS.Server.Controllers.Cloths.DTO
 {
     public class ClothUpdateDTO
     {
+        [Required]
         public int Id { get; set; }
-        public string? description {  get; set; }
+
+        [Required]
         public string Name { get; set; }
-        public float? Price { get; set; }
+
+        [Required]
+        public double Price { get; set; }
+
+        public string? Description { get; set; }
     }
 }

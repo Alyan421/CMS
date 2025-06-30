@@ -1,7 +1,6 @@
 ﻿using CMS.Server.Models;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace CMS.Server.EntityFrameworkCore
 {
     public class AMSDbContext : DbContext
@@ -14,10 +13,10 @@ namespace CMS.Server.EntityFrameworkCore
         public DbSet<Color> Colors { get; set; }
         public DbSet<Cloth> Cloths { get; set; }
         public DbSet<Image> Images { get; set; }
+        public DbSet<ClothColor> ClothColors { get; set; }  // Add the junction table
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             base.OnModelCreating(modelBuilder);
 
             // Make all table names lowercase for PostgreSQL compatibility
@@ -50,21 +49,33 @@ namespace CMS.Server.EntityFrameworkCore
                 entity.Property(u => u.Role)
                       .IsRequired()
                       .HasMaxLength(50);
-
             });
 
-            // Configure Cloth and Color relationship
+            // Configure ClothColor (Junction Table)
+            modelBuilder.Entity<ClothColor>(entity =>
+            {
+                // Set composite key
+                entity.HasKey(cc => new { cc.ClothId, cc.ColorId });
+                entity.Property(e => e.AvailableStock).IsRequired();
+
+                // Configure many-to-many relationship with Cloth
+                entity.HasOne(cc => cc.Cloth)
+                      .WithMany(c => c.ClothColors)
+                      .HasForeignKey(cc => cc.ClothId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Configure many-to-many relationship with Color
+                entity.HasOne(cc => cc.Color)
+                      .WithMany(c => c.ClothColors)
+                      .HasForeignKey(cc => cc.ColorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Color entity (updated for many-to-many)
             modelBuilder.Entity<Color>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.ColorName).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.AvailiableStock).IsRequired();
-
-                // Explicitly configure the relationship
-                entity.HasOne(c => c.Cloth) // Navigation property in Color
-                      .WithMany(c => c.Colors) // Navigation property in Cloth
-                      .HasForeignKey(c => c.ClothId) // Foreign key in Color
-                      .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
             });
 
             // Configure Cloth entity
@@ -76,19 +87,18 @@ namespace CMS.Server.EntityFrameworkCore
                 entity.Property(e => e.Description).HasMaxLength(500);
             });
 
-            // Configure Image and Color relationship
+            // Configure Image entity
             modelBuilder.Entity<Image>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.URL).IsRequired().HasMaxLength(500);
 
-                // Explicitly configure the relationship
-                entity.HasOne(i => i.Color) // Navigation property in Image
-                      .WithOne(c => c.Image) // Navigation property in Color
-                      .HasForeignKey<Image>(i => i.ColorId) // Foreign key in Image
-                      .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
+                // Configure relationship with composite foreign key
+                entity.HasOne(i => i.ClothColor)
+                      .WithOne(cc => cc.Image)
+                      .HasForeignKey<Image>(i => new { i.ClothId, i.ColorId })
+                      .OnDelete(DeleteBehavior.Cascade);
             });
-
         }
     }
 }

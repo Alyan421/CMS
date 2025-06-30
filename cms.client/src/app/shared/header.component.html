@@ -18,6 +18,12 @@
         <li *ngIf="isAdmin"><a routerLink="/upload-image" routerLinkActive="active">Upload Image</a></li>
         <li *ngIf="isAdmin"><a routerLink="/colors" routerLinkActive="active">Colors</a></li>
         <li *ngIf="isAdmin"><a routerLink="/cloths" routerLinkActive="active">Cloths</a></li>
+        <!-- Add Stock Management link -->
+        <li *ngIf="isAdmin">
+          <a routerLink="/admin/stock" routerLinkActive="active">
+            <i class="fas fa-boxes"></i> Inventory
+          </a>
+        </li>
       </ul>
     </nav>
 
@@ -43,6 +49,12 @@
       <li *ngIf="isAdmin"><a routerLink="/upload-image" (click)="closeMobileMenu()">Upload Image</a></li>
       <li *ngIf="isAdmin"><a routerLink="/colors" (click)="closeMobileMenu()">Colors</a></li>
       <li *ngIf="isAdmin"><a routerLink="/cloths" (click)="closeMobileMenu()">Cloths</a></li>
+      <!-- Add Stock Management link to mobile menu -->
+      <li *ngIf="isAdmin">
+        <a routerLink="/admin/stock" (click)="closeMobileMenu()">
+          <i class="fas fa-boxes"></i> Inventory Management
+        </a>
+      </li>
 
       <!-- Auth links -->
       <li *ngIf="!isLoggedIn"><a routerLink="/login" (click)="closeMobileMenu()">Login</a></li>

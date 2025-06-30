@@ -1,36 +1,46 @@
-﻿using CMS.Server.Models;
-using CMS.Server.Repository;
-using CMS.Server.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using CMS.Server.Controllers.Cloths.DTO;
+using CMS.Server.Models;
+using CMS.Server.Repository;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace CMS.Server.Managers.Cloths
 {
     public class ClothManager : IClothManager
     {
-        private readonly IGenericRepository<Cloth> _repository;
-        private readonly IGenericRepository<Color> _colorRepository;
+        private readonly IGenericRepository<Cloth> _clothRepository;
+        private readonly IGenericRepository<ClothColor> _clothColorRepository;
+        private readonly IMapper _mapper;
 
-        public ClothManager(IGenericRepository<Cloth> repository, IGenericRepository<Color> colorRepository)
+        public ClothManager(
+            IGenericRepository<Cloth> clothRepository,
+            IGenericRepository<ClothColor> clothColorRepository,
+            IMapper mapper)
         {
-            _repository = repository;
-            _colorRepository = colorRepository;
+            _clothRepository = clothRepository;
+            _clothColorRepository = clothColorRepository;
+            _mapper = mapper;
         }
 
         public async Task<Cloth> CreateClothAsync(Cloth cloth)
         {
             try
             {
-                await _repository.AddAsync(cloth);
-                return cloth;
+                // Add the cloth
+                await _clothRepository.AddAsync(cloth);
+                await _clothRepository.SaveChangesAsync();
+
+                // Return cloth with relationships
+                return await GetClothByIdAsync(cloth.Id);
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while creating the cloth.", ex);
+                throw new Exception("Error creating cloth", ex);
             }
         }
 
@@ -38,13 +48,16 @@ namespace CMS.Server.Managers.Cloths
         {
             try
             {
-                await _repository.UpdateAsync(cloth);
-                return cloth;
+                // Update the cloth
+                await _clothRepository.UpdateAsync(cloth);
+                await _clothRepository.SaveChangesAsync();
+
+                // Return cloth with relationships
+                return await GetClothByIdAsync(cloth.Id);
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while updating the cloth.", ex);
+                throw new Exception($"Error updating cloth with ID {cloth.Id}", ex);
             }
         }
 
@@ -52,28 +65,31 @@ namespace CMS.Server.Managers.Cloths
         {
             try
             {
-                var cloth = await _repository.GetByIdAsync(id);
-                if (cloth == null) return false;
-
-                while (true)
+                var cloth = await _clothRepository.GetByIdAsync(id);
+                if (cloth == null)
                 {
-                    var color = await _colorRepository.GetDbSet().FirstOrDefaultAsync(c => c.ClothId == id);
-                    if (color == null) break;
-                    else
-                    {
-                        await _colorRepository.DeleteAsync(color);
-                        await _colorRepository.SaveChangesAsync();
-                    }
+                    return false; // Cloth not found
                 }
 
-                await _repository.DeleteAsync(cloth);
-                await _repository.SaveChangesAsync();
+                var hasAssociatedCloths = await _clothColorRepository.ExistsAsync(cc => cc.ClothId == id);
+                if (hasAssociatedCloths)
+                {
+                    throw new InvalidOperationException("Cannot delete cloth as it is associated with one or more cloths. Please remove these associations first.");
+                }
+
+                if (cloth == null)
+                {
+                    return false;
+                }
+
+                await _clothRepository.DeleteAsync(cloth);
+                await _clothRepository.SaveChangesAsync();
+
                 return true;
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while deleting the cloth.", ex);
+                throw new Exception($"Error deleting cloth with ID {id}", ex);
             }
         }
 
@@ -81,12 +97,11 @@ namespace CMS.Server.Managers.Cloths
         {
             try
             {
-                return await _repository.GetByIdAsync(id);
+                return await _clothRepository.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while retrieving the cloth by ID.", ex);
+                throw new Exception($"Error retrieving cloth with ID {id}", ex);
             }
         }
 
@@ -94,12 +109,11 @@ namespace CMS.Server.Managers.Cloths
         {
             try
             {
-                return await _repository.GetAllAsync();
+                return await _clothRepository.GetAllAsync();
             }
             catch (Exception ex)
             {
-                // Log the exception (logging mechanism not shown here)
-                throw new Exception("An error occurred while retrieving all cloths.", ex);
+                throw new Exception("Error retrieving all cloths", ex);
             }
         }
     }

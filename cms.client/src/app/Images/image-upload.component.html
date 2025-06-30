@@ -1,103 +1,91 @@
-<div class="image-upload-container">
-  <div class="upload-card">
+<div class="upload-container">
+  <div class="header" *ngIf="!isUpdateMode">
     <h1>Upload Image</h1>
-    <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
-      <!-- Image Upload Section -->
-      <div class="section image-section">
-        <h2>Select Image</h2>
-        <div class="file-upload-area" (click)="fileInput.click()" [class.has-file]="uploadForm.get('file')?.value">
-          <input #fileInput type="file" hidden (change)="onFileChange($event)" accept="image/*">
-          <div class="upload-placeholder" *ngIf="!uploadForm.get('file')?.value">
-            <i class="fa fa-cloud-upload-alt"></i>
-            <p>Click to select an image</p>
+    <p>Upload an image and associate it with a cloth, color, and set initial stock</p>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="upload-form-container card">
+      <div class="card-header">
+        <h2>{{ isUpdateMode ? 'Update Image' : 'Image Upload' }}</h2>
+      </div>
+      <div class="card-body">
+        <div *ngIf="isLoadingData" class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Loading data...</p>
+        </div>
+
+        <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()" *ngIf="!isLoadingData">
+          <!-- File upload section -->
+          <div class="form-group">
+            <label for="file">{{ isUpdateMode ? 'Change Image (Optional)' : 'Select Image' }}</label>
+            <input type="file" id="file" (change)="onFileChange($event)" class="form-control" accept="image/*">
+            <div class="invalid-feedback" *ngIf="uploadForm.get('file')?.invalid && uploadForm.get('file')?.touched">
+              Please select an image file.
+            </div>
           </div>
-          <div class="image-preview" *ngIf="imagePreview">
-            <img [src]="imagePreview" alt="Image preview">
+
+          <!-- Image preview section -->
+          <div class="image-preview-container" *ngIf="imagePreview">
+            <div class="image-preview">
+              <img [src]="imagePreview" alt="Preview">
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Existing Colors Selection Section -->
-      <div class="section color-section" *ngIf="!isAddingNewClothColor">
-        <h2>Select Existing Color</h2>
-        <div class="form-group">
-          <label for="existingColor">Choose a color:</label>
-          <select id="existingColor" formControlName="colorId" class="form-control">
-            <option value="">-- Select Color --</option>
-            <option *ngFor="let color of colors" [value]="color.id">
-              {{ color.colorName }} (Cloth: {{ getClothName(color.clothId) }})
-            </option>
-          </select>
-        </div>
-
-        <div class="add-new-links">
-          <button type="button" class="link-button" (click)="toggleNewClothColor()">
-            <i class="fa fa-plus-circle"></i> Add New Cloth and Color
-          </button>
-        </div>
-      </div>
-
-      <!-- New Cloth and Color Form -->
-      <div class="section new-item-section" *ngIf="isAddingNewClothColor">
-        <h2>Add New Cloth and Color</h2>
-
-        <!-- New Cloth Form -->
-        <div class="form-group">
-          <label for="clothName">Cloth Name:</label>
-          <input id="clothName" type="text" formControlName="clothName" class="form-control" placeholder="e.g. T-Shirt, Jeans">
-        </div>
-
-        <div class="form-group">
-          <label for="clothPrice">Cloth Price (PKR):</label>
-          <div class="price-input">
-            <span class="currency">PKR</span>
-            <input id="clothPrice" type="number" step="0.01" formControlName="clothPrice" class="form-control" placeholder="0.00">
+          <!-- Cloth selection -->
+          <div class="form-group">
+            <label for="clothId">Select Cloth</label>
+            <select id="clothId" formControlName="clothId" class="form-control" [class.is-invalid]="uploadForm.get('clothId')?.invalid && uploadForm.get('clothId')?.touched">
+              <option value="">Select a cloth</option>
+              <option *ngFor="let cloth of cloths" [value]="cloth.id">{{ cloth.name }}</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="uploadForm.get('clothId')?.invalid && uploadForm.get('clothId')?.touched">
+              Please select a cloth.
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="clothDescription">Cloth Description:</label>
-          <textarea id="clothDescription" formControlName="clothDescription" class="form-control" placeholder="Product description" rows="2"></textarea>
-        </div>
+          <!-- Color selection -->
+          <div class="form-group">
+            <label for="colorId">Select Color</label>
+            <select id="colorId" formControlName="colorId" class="form-control" [class.is-invalid]="uploadForm.get('colorId')?.invalid && uploadForm.get('colorId')?.touched">
+              <option value="">Select a color</option>
+              <option *ngFor="let color of colors" [value]="color.id">{{ color.colorName }}</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="uploadForm.get('colorId')?.invalid && uploadForm.get('colorId')?.touched">
+              Please select a color.
+            </div>
+          </div>
 
-        <!-- New Color Form -->
-        <div class="form-group">
-          <label for="colorName">Color Name:</label>
-          <input id="colorName" type="text" formControlName="colorName" class="form-control" placeholder="e.g. Red, Blue, Green">
-        </div>
+          <!-- Stock quantity -->
+          <div class="form-group">
+            <label for="availableStock">{{ isUpdateMode ? 'Update Stock Quantity' : 'Initial Stock Quantity' }}</label>
+            <input type="number" id="availableStock" formControlName="availableStock" class="form-control" min="0" [class.is-invalid]="uploadForm.get('availableStock')?.invalid && uploadForm.get('availableStock')?.touched">
+            <div class="invalid-feedback" *ngIf="uploadForm.get('availableStock')?.invalid && uploadForm.get('availableStock')?.touched">
+              Stock quantity must be a positive number.
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="availableStock">Available Stock:</label>
-          <input id="availableStock" type="number" formControlName="availableStock" class="form-control" placeholder="Quantity">
-        </div>
+          <!-- Form buttons -->
+          <div class="form-buttons">
+            <button type="submit" class="btn btn-primary" [disabled]="uploadForm.invalid || isLoading">
+              <i class="fas" [class.fa-upload]="!isUpdateMode" [class.fa-save]="isUpdateMode"></i>
+              {{ isUpdateMode ? 'Update Image & Stock' : 'Upload Image & Create Stock' }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="isLoading" *ngIf="!isUpdateMode">
+              <i class="fas fa-undo"></i> Reset
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="goBack()" [disabled]="isLoading">
+              <i class="fas fa-arrow-left"></i> {{ isUpdateMode ? 'Cancel' : 'Back' }}
+            </button>
+          </div>
 
-        <div class="cancel-link">
-          <button type="button" class="link-button cancel" (click)="toggleNewClothColor()">
-            <i class="fa fa-arrow-left"></i> Use Existing Color Instead
-          </button>
-        </div>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="!isFormValid()">
-          <i class="fa fa-upload"></i> Upload Image
-        </button>
-      </div>
-    </form>
-
-    <!-- Status Messages -->
-    <div class="status-messages">
-      <div *ngIf="successMessage" class="success-message">
-        <i class="fa fa-check-circle"></i> {{ successMessage }}
-      </div>
-      <div *ngIf="errorMessage" class="error-message">
-        <i class="fa fa-exclamation-circle"></i> {{ errorMessage }}
+          <!-- Loading indicator -->
+          <div class="loading-indicator" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>{{ isUpdateMode ? 'Updating image and stock...' : 'Uploading image and creating stock...' }}</p>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Add Font Awesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-

@@ -15,5 +15,6 @@ namespace CMS.Server.Managers.Images
         Task DeleteAsync(int id);
         Task<List<ImageGetDTO>> FilterByClothNameAsync(string clothName);
         Task<List<ImageGetDTO>> FilterByColorAsync(string colorName);
+        Task<List<ImageGetDTO>> GetByClothColorIdAsync(int clothId, int colorId);
     }
 }

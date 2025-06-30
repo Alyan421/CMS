@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -22,6 +21,11 @@ export class ImageService {
 
   uploadImage(formData: FormData): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/Image/upload/`, formData);
+  }
+
+  updateImage(id: number, formData: FormData): Observable<any> {
+    // Ensure we're using the right HTTP method and URL format
+    return this.http.put<any>(`${this.baseUrl}/Image/${id}`, formData);
   }
 
   deleteImage(id: number): Observable<void> {

@@ -3,32 +3,36 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
 
-
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ColorService {
-  private baseUrl = environment.apiUrl;
+  private apiUrl = `${environment.apiUrl}/Color`;
+  private clothUrl = `${environment.apiUrl}/Cloth`;
 
   constructor(private http: HttpClient) { }
 
-  getColorById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/Color/${id}`);
-  }
-
   getAllColors(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/Color`);
+    return this.http.get<any[]>(this.apiUrl);
   }
 
-  createColor(color: any): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/Color`, color);
+  getColorById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  updateColor(color: any): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/Color`, color);
+  getColorsByClothId(clothId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/by-cloth/${clothId}`);
   }
 
-  deleteColor(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/Color/${id}`);
+  createColor(colorData: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, colorData);
+  }
+
+  updateColor(colorData: any): Observable<any> {
+    return this.http.put<any>(this.apiUrl, colorData);
+  }
+
+  deleteColor(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 }

@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using CMS.Server.Managers.Cloths;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CMS.Server.Services;
 using CMS.Server.Controllers.Cloths.DTO;
 using System;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Server.Controllers.Cloths
@@ -36,15 +34,18 @@ namespace CMS.Server.Controllers.Cloths
                     return BadRequest("Cloth data is required.");
                 }
 
+                // Map DTO to entity
                 var cloth = _mapper.Map<Cloth>(clothCreateDTO);
-                var clothCreate = await _clothManager.CreateClothAsync(cloth);
 
-                if (clothCreate == null)
+                // Create cloth with relationships
+                var createdCloth = await _clothManager.CreateClothAsync(cloth);
+
+                if (createdCloth == null)
                 {
-                    return StatusCode(500, "An error occurred while creating thecloth.");
+                    return StatusCode(500, "An error occurred while creating the cloth.");
                 }
 
-                var clothDTO = _mapper.Map<ClothGetDTO>(clothCreate);
+                var clothDTO = _mapper.Map<ClothGetDTO>(createdCloth);
                 return Ok(clothDTO);
             }
             catch (Exception ex)
@@ -60,11 +61,12 @@ namespace CMS.Server.Controllers.Cloths
             {
                 if (id <= 0)
                 {
-                    return BadRequest("Invalidcloth ID.");
+                    return BadRequest("Invalid cloth ID.");
                 }
 
                 var cloth = await _clothManager.GetClothByIdAsync(id);
-                if(cloth == null)
+
+                if (cloth == null)
                 {
                     return NotFound($"Cloth with ID {id} not found.");
                 }
@@ -86,18 +88,25 @@ namespace CMS.Server.Controllers.Cloths
             {
                 if (clothUpdateDTO == null || clothUpdateDTO.Id <= 0)
                 {
-                    return BadRequest("Validcloth data is required.");
+                    return BadRequest("Valid cloth data is required.");
                 }
 
-                var cloth = _mapper.Map<Cloth>(clothUpdateDTO);
-                var updatedCloth = await _clothManager.UpdateClothAsync(cloth);
-
-                if (updatedCloth == null)
+                // Get existing cloth
+                var existingCloth = await _clothManager.GetClothByIdAsync(clothUpdateDTO.Id);
+                if (existingCloth == null)
                 {
                     return NotFound($"Cloth with ID {clothUpdateDTO.Id} not found.");
                 }
 
-                var clothDTO = _mapper.Map<ClothUpdateDTO>(updatedCloth);
+                // Update basic properties
+                existingCloth.Name = clothUpdateDTO.Name;
+                existingCloth.Price = clothUpdateDTO.Price;
+                existingCloth.Description = clothUpdateDTO.Description;
+
+                // MISSING LINE: Save the updated cloth
+                await _clothManager.UpdateClothAsync(existingCloth);
+
+                var clothDTO = _mapper.Map<ClothGetDTO>(existingCloth);
                 return Ok(clothDTO);
             }
             catch (Exception ex)
@@ -114,16 +123,15 @@ namespace CMS.Server.Controllers.Cloths
             {
                 if (id <= 0)
                 {
-                    return BadRequest("Invalidcloth ID.");
+                    return BadRequest("Invalid cloth ID.");
                 }
 
-                var cloth = await _clothManager.GetClothByIdAsync(id);
-                if(cloth == null)
+                var result = await _clothManager.DeleteClothAsync(id);
+                if (!result)
                 {
                     return NotFound($"Cloth with ID {id} not found.");
                 }
 
-                await _clothManager.DeleteClothAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -138,9 +146,10 @@ namespace CMS.Server.Controllers.Cloths
             try
             {
                 var cloths = await _clothManager.GetAllClothsAsync();
-                if (cloths == null)
+
+                if (cloths == null || !cloths.Any())
                 {
-                    return NotFound("Nocloths found.");
+                    return NotFound("No cloths found.");
                 }
 
                 var clothDTOs = _mapper.Map<IEnumerable<ClothGetDTO>>(cloths);
@@ -151,28 +160,5 @@ namespace CMS.Server.Controllers.Cloths
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        //public async Task<IActionResult> GetClothIdByClothname(string clothname)
-        //{
-        //    if (string.IsNullOrWhiteSpace(clothname))
-        //    {
-        //        return BadRequest("Clothname cannot be empty.");
-        //    }
-
-        //    try
-        //    {
-        //        var clothId = await _clothManager.GetClothIdByClothnameAsync(clothname);
-        //        if(clothId == null)
-        //        {
-        //            return NotFound("Cloth not found.");
-        //        }
-
-        //        return Ok(clothId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the exception if logging is enabled
-        //        return StatusCode(500, "Internal server error.");
-        //    }
-        //}
     }
 }

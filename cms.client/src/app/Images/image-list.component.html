@@ -5,6 +5,21 @@
   </header>
 
   <div class="filter-section">
+    <!-- Add Cloth Filter Section -->
+    <h3>Filter by Cloth</h3>
+    <div class="cloth-filter">
+      <select [(ngModel)]="selectedClothName" class="cloth-select">
+        <option value="">All Cloths</option>
+        <option *ngFor="let cloth of cloths" [value]="cloth.name">{{ cloth.name }}</option>
+      </select>
+      <button class="filter-btn" (click)="filterByClothName()">
+        <i class="fas fa-filter"></i> Filter
+      </button>
+      <button class="filter-btn" (click)="loadImages()">
+        <i class="fas fa-sync"></i> Reset
+      </button>
+    </div>
+
     <h3>Filter by Color</h3>
     <div class="color-buttons">
       <button class="filter-btn all-btn" (click)="loadImages()">All Colors</button>
@@ -39,11 +54,16 @@
       </div>
       <div class="image-details">
         <span class="image-id">ID: {{ image.id }}</span>
-        <span class="image-color">Color: {{ getColorName(image.colorId) }}</span>
+        <!-- Add cloth name display -->
+        <span class="image-cloth">Cloth: {{ image.clothName || 'Unknown' }}</span>
+        <span class="image-color">Color: {{ image.colorName || getColorName(image.colorId) }}</span>
       </div>
       <div class="image-actions">
         <button class="action-btn view-btn" (click)="viewImage(image)">
           <i class="fa fa-eye"></i> View
+        </button>
+        <button class="action-btn update-btn" (click)="updateImage(image)">
+          <i class="fa fa-edit"></i> Update
         </button>
         <button class="action-btn delete-btn" (click)="deleteImage(image.id)">
           <i class="fa fa-trash"></i> Delete
@@ -76,8 +96,21 @@
       <div class="modal-details">
         <h3>Image Details</h3>
         <p><strong>ID:</strong> {{ selectedImage.id }}</p>
-        <p><strong>Color:</strong> {{ getColorName(selectedImage.colorId) }}</p>
+        <!-- Add cloth name to modal -->
+        <p><strong>Cloth:</strong> {{ selectedImage.clothName || 'Unknown' }}</p>
+        <p><strong>Color:</strong> {{ selectedImage.colorName || getColorName(selectedImage.colorId) }}</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Update Modal - will show the image-upload component -->
+  <div *ngIf="showUpdateModal" class="update-modal">
+    <div class="modal-content">
+      <span class="close-btn" (click)="closeUpdateModal()">&times;</span>
+      <h2>Update Image</h2>
+      <app-image-upload [isUpdateMode]="true"
+                        [imageToUpdate]="imageToUpdate"
+                        (updateComplete)="onUpdateComplete()"></app-image-upload>
     </div>
   </div>
 </div>

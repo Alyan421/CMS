@@ -1,9 +1,16 @@
-﻿namespace CMS.Server.Controllers.Images.DTO
+﻿using Microsoft.AspNetCore.Mvc;
+
+public class ImageUpdateDTO
 {
-    public class ImageUpdateDTO
-    {
-        public int Id { get; set; }
-        public int ColorId {  get; set; }
-        public string URL { get; set; }
-    }
+    [FromForm(Name = "id")]
+    public int Id { get; set; }
+
+    [FromForm(Name = "clothId")]
+    public int ClothId { get; set; }
+
+    [FromForm(Name = "colorId")]
+    public int ColorId { get; set; }
+
+    // URL should be set by the server, not submitted from the client
+    public string URL { get; set; }
 }

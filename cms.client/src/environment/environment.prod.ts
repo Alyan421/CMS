@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://cms-app.onrender.com/api', // Replace with your actual Render backend URL
+  apiUrl: 'REPLACE_WITH_API_URL', // Replace with your actual Render backend URL
 };

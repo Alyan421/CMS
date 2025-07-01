@@ -17,15 +17,17 @@ jobs:
     permissions:
       id-token: write
       contents: read
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # Use the version your Angular app needs
+          node-version: '18'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           cd cms.client
           npm install
@@ -42,7 +44,8 @@ jobs:
           action: "upload"
           app_location: "cms.client"
           output_location: "dist/cms.client"
-          github_id_token: ${{ steps.idtoken.outputs.result }}
+        # env:
+        #   VITE_API_URL: ${{ secrets.VITE_API_URL }}   # Uncomment if you inject envs into Angular
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

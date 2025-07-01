@@ -32,6 +32,11 @@ jobs:
           cd cms.client
           npm install
 
+      - name: Replace API URL in environment.prod.ts
+        run: |
+          cd cms.client/src/environments
+          sed -i 's|REPLACE_WITH_API_URL|${{ secrets.PRODUCTION_API_URL }}|g' environment.prod.ts
+
       - name: Build Angular App
         run: |
           cd cms.client
@@ -40,12 +45,10 @@ jobs:
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ICY_ISLAND_07D435F00 }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
           app_location: "cms.client"
           output_location: "dist/cms.client"
-        # env:
-        #   VITE_API_URL: ${{ secrets.VITE_API_URL }}   # Uncomment if you inject envs into Angular
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

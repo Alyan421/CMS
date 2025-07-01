@@ -34,7 +34,7 @@ jobs:
 
       - name: Replace API URL in environment.prod.ts
         run: |
-          cd cms.client/src/environments
+          cd cms.client/src/environment
           sed -i 's|REPLACE_WITH_API_URL|${{ secrets.PRODUCTION_API_URL }}|g' environment.prod.ts
 
       - name: Build Angular App

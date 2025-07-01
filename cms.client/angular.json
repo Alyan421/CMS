@@ -40,7 +40,6 @@
               "src/styles.css"
             ],
             "scripts": []
-            // Removed allowedCommonJsDependencies for ngx-toastr
           },
           "configurations": {
             "production": {

@@ -177,6 +177,42 @@ else
 
 var app = builder.Build();
 
+// Add this right after var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+
+        // Capture 500 errors that didn't throw exceptions
+        if (context.Response.StatusCode == 500)
+        {
+            Console.WriteLine("500 error detected in middleware");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unhandled exception: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+        // Prevent ASP.NET Core from handling the exception
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+
+        // Add CORS headers to error responses
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+        {
+            error = "An error occurred while processing your request.",
+            message = ex.Message,
+            stackTrace = app.Environment.IsDevelopment() ? ex.StackTrace : null
+        }));
+    }
+});
+
 // Enable static files for local image storage if using local provider
 if (string.Equals(storageProvider, "Local", StringComparison.OrdinalIgnoreCase))
 {
@@ -208,14 +244,82 @@ app.MapControllers();
 //app.MapFallbackToFile("/index.html");
 
 // Add before app.Run()
-app.MapGet("/api/health", () =>
+app.MapGet("/api/diagnostics/db", async (AMSDbContext dbContext) =>
 {
-    return Results.Ok(new
+    try
     {
-        status = "healthy",
-        timestamp = DateTime.UtcNow,
-        environment = app.Environment.EnvironmentName
-    });
+        // Test database connectivity
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        var databaseName = dbContext.Database.GetDbConnection().Database;
+
+        // Try to run a simple query
+        int userCount = 0;
+        try
+        {
+            userCount = await dbContext.Users.CountAsync();
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new
+            {
+                databaseConnected = canConnect,
+                databaseName,
+                error = $"Query failed: {ex.Message}"
+            });
+        }
+
+        return Results.Ok(new
+        {
+            databaseConnected = canConnect,
+            databaseName,
+            userCount
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message, stack = ex.StackTrace });
+    }
+});
+
+app.MapGet("/api/diagnostics/jwt", () =>
+{
+    try
+    {
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKeyLength = builder.Configuration["Jwt:Key"]?.Length ?? 0;
+
+        return Results.Ok(new
+        {
+            issuer = jwtIssuer ?? "Not configured",
+            audience = jwtAudience ?? "Not configured",
+            keyLength = jwtKeyLength,
+            hasKey = jwtKeyLength > 0
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/api/diagnostics/connection", () =>
+{
+    try
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        return Results.Ok(new
+        {
+            hasConnectionString = !string.IsNullOrEmpty(connectionString),
+            connectionStringStart = connectionString?.Length > 20
+                ? connectionString.Substring(0, 20) + "..."
+                : "Not configured or too short"
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
 });
 
 app.Run();

@@ -128,7 +128,7 @@ if (builder.Environment.IsProduction())
     builder.Configuration["Cloudinary:ApiSecret"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
 
     // Get allowed origins from environment variable
-    var allowedOrigins = "https://green-tree-0e8213e00.2.azurestaticapps.net";//Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
+    var allowedOrigins =new[] { "https://green-tree-0e8213e00.2.azurestaticapps.net" };//Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
       //  ?? new[] { "http://localhost:4200" };
 
     // Log the allowed origins for debugging
@@ -197,5 +197,18 @@ app.UseIpRateLimiting();
 
 app.MapControllers();
 //app.MapFallbackToFile("/index.html");
+
+// Add this just before app.Run()
+app.MapGet("/api/diagnostics/cors", (HttpContext context) =>
+{
+    return Results.Ok(new
+    {
+        Environment = app.Environment.EnvironmentName,
+        IsProduction = app.Environment.IsProduction(),
+        RequestOrigin = context.Request.Headers.Origin.ToString(),
+        Host = context.Request.Host.ToString(),
+        AllowedOrigins = new[] { "https://green-tree-0e8213e00.2.azurestaticapps.net" }
+    });
+});
 
 app.Run();

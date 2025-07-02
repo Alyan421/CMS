@@ -14,6 +14,14 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
+
+AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+{
+    var ex = args.ExceptionObject as Exception;
+    File.WriteAllText("unhandled_exception.txt", ex?.ToString() ?? "Unknown error");
+    Console.WriteLine($"CRITICAL UNHANDLED EXCEPTION: {ex}");
+};
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -199,16 +207,14 @@ app.UseIpRateLimiting();
 app.MapControllers();
 //app.MapFallbackToFile("/index.html");
 
-// Add this just before app.Run()
-app.MapGet("/api/diagnostics/cors", (HttpContext context) =>
+// Add before app.Run()
+app.MapGet("/api/health", () =>
 {
     return Results.Ok(new
     {
-        Environment = app.Environment.EnvironmentName,
-        IsProduction = app.Environment.IsProduction(),
-        RequestOrigin = context.Request.Headers.Origin.ToString(),
-        Host = context.Request.Host.ToString(),
-        AllowedOrigins = new[] { "https://green-tree-0e8213e00.2.azurestaticapps.net" }
+        status = "healthy",
+        timestamp = DateTime.UtcNow,
+        environment = app.Environment.EnvironmentName
     });
 });
 

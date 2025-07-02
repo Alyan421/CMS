@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'REPLACE_WITH_API_URL', // Replace with your actual Render backend URL
+  get apiUrl() {
+    return (window as any).config?.apiUrl || 'https://your-fallback-url.azurewebsites.net/api';
+  }
 };

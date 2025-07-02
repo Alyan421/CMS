@@ -128,8 +128,8 @@ if (builder.Environment.IsProduction())
     builder.Configuration["Cloudinary:ApiSecret"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
 
     // Get allowed origins from environment variable
-    var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
-        ?? new[] { "http://localhost:4200" };
+    var allowedOrigins = "https://green-tree-0e8213e00.2.azurestaticapps.net";//Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
+      //  ?? new[] { "http://localhost:4200" };
 
     // Log the allowed origins for debugging
     Console.WriteLine("ALLOWED_ORIGINS environment variable value: " + allowedOrigins);

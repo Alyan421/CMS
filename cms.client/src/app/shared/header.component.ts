@@ -37,9 +37,16 @@ export class HeaderComponent implements OnInit {
 
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    // Add a class to the body to prevent scrolling when menu is open
+    if (this.isMobileMenuOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
   }
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
+    document.body.classList.remove('menu-open');
   }
 }

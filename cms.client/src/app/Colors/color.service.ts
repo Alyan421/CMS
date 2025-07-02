@@ -7,9 +7,12 @@ import { environment } from '../../environment/environment';
   providedIn: 'root'
 })
 export class ColorService {
-  private apiUrl = `${environment.apiUrl}/Color`;
-  private clothUrl = `${environment.apiUrl}/Cloth`;
-
+private get baseUrl(): string {
+  return `${environment.apiUrl}/Color`;
+}
+private get clothUrl(): string {
+  return `${environment.apiUrl}/Cloth`;
+}
   constructor(private http: HttpClient) { }
 
   getAllColors(): Observable<any[]> {

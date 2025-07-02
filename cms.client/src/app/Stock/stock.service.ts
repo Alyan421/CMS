@@ -21,8 +21,9 @@ export interface StockUpdate {
   providedIn: 'root'
 })
 export class StockService {
-  private baseUrl = `${environment.apiUrl}/Stock`;
-
+private get baseUrl(): string {
+  return `${environment.apiUrl}/Stock`;
+}
   constructor(private http: HttpClient) { }
 
   getAllStock(): Observable<Stock[]> {

@@ -7,8 +7,9 @@ import { environment } from '../../environment/environment';
   providedIn: 'root',
 })
 export class UserService {
-  private baseUrl = environment.apiUrl;
-
+private get baseUrl(): string {
+  return environment.apiUrl;
+}
   constructor(private http: HttpClient) { }
 
   registerUser(user: any): Observable<any> {

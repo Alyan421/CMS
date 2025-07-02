@@ -7,8 +7,9 @@ import { environment } from '../../environment/environment';
   providedIn: 'root',
 })
 export class ClothService {
-  private baseUrl = environment.apiUrl;
-
+private get baseUrl(): string {
+  return environment.apiUrl;
+}
   constructor(private http: HttpClient) { }
 
   getClothById(id: number): Observable<any> {

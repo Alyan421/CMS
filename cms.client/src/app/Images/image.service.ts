@@ -9,7 +9,6 @@ import { environment } from '../../environment/environment';
 export class ImageService {
 private get baseUrl(): string {
   return environment.apiUrl};
-}
   constructor(private http: HttpClient) { }
 
   getAllImages(): Observable<any[]> {

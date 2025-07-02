@@ -140,14 +140,15 @@ if (builder.Environment.IsProduction())
     }
 
     // Add CORS services with environment-based configuration
+    // Replace your current CORS configuration in the Production block with this
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowAngularApp", policy =>
         {
-            policy.WithOrigins(allowedOrigins)
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
+            policy.AllowAnyOrigin() // This allows requests from any origin
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+            // Note: AllowAnyOrigin() is incompatible with AllowCredentials()
         });
     });
 }

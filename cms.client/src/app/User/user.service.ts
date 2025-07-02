@@ -8,6 +8,8 @@ import { environment } from '../../environment/environment';
 })
 export class UserService {
 private get baseUrl(): string {
+  console.log('window.config:', (window as any).config);
+  console.log('environment.apiUrl:', environment.apiUrl);
   return environment.apiUrl;
 }
   constructor(private http: HttpClient) { }

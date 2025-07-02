@@ -131,6 +131,14 @@ if (builder.Environment.IsProduction())
     var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
         ?? new[] { "http://localhost:4200" };
 
+    // Log the allowed origins for debugging
+    Console.WriteLine("ALLOWED_ORIGINS environment variable value: " + allowedOrigins);
+    Console.WriteLine("Origins allowed by CORS:");
+    foreach (var origin in allowedOrigins)
+    {
+        Console.WriteLine($"- {origin}");
+    }
+
     // Add CORS services with environment-based configuration
     builder.Services.AddCors(options =>
     {

@@ -7,7 +7,7 @@ import { environment } from '../../environment/environment';
   providedIn: 'root'
 })
 export class ColorService {
-private get baseUrl(): string {
+private get apiUrl(): string {
   return `${environment.apiUrl}/Color`;
 }
 private get clothUrl(): string {

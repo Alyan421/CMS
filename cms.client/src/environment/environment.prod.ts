@@ -1,6 +1,4 @@
 export const environment = {
   production: true,
-  get apiUrl() {
-    return (window as any).config?.apiUrl || 'https://your-fallback-url.azurewebsites.net/api';
-  }
+  apiUrl: 'https://cms-app.onrender.com/api', // Replace with your actual Render backend URL
 };

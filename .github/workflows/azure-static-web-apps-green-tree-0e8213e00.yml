@@ -55,7 +55,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/cms.client"
-          api_location: ""
           output_location: "/dist/cms.client/browser"
 
   close_pull_request_job:

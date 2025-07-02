@@ -19,6 +19,30 @@ jobs:
         with:
           submodules: true
           lfs: false
+          
+      # Create assets directory if it doesn't exist
+      - name: Create assets directory
+        run: mkdir -p cms.client/src/assets
+      
+      # Create or update config.js with the API URL
+      - name: Create config.js with API URL
+        run: |
+          echo 'window.config = { apiUrl: "${{ secrets.API_URL || 'https://your-fallback-url.azurewebsites.net/api' }}" };' > cms.client/src/assets/config.js
+      
+      # Add script tag to index.html if not already present
+      - name: Update index.html
+        run: |
+          if ! grep -q "config.js" cms.client/src/index.html; then
+            sed -i '/<head>/a \  <script src="assets/config.js"></script>' cms.client/src/index.html
+          fi
+      
+      # Make sure assets are included in angular.json
+      - name: Update angular.json
+        run: |
+          if ! grep -q '"src/assets"' cms.client/angular.json; then
+            sed -i 's/"assets": \[/{/; s/{/{ "glob": "**\/*", "input": "src\/assets", "output": "\/assets" },/; s/]/],/' cms.client/angular.json
+          fi
+          
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

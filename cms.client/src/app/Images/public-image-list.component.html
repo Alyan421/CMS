@@ -102,7 +102,11 @@
             <span class="color-dot" [style.background-color]="getColorBackground(image.colorName || getColorName(image.colorId))"></span>
             <span>{{ image.colorName || getColorName(image.colorId) }}</span>
           </div>
-          <div class="product-price">{{ currency }} {{ image.price }}</div>
+          <div class="product-price">
+            <span class="discounted-price">{{ currency }} {{ (image.price * 1.4).toFixed(2) }}</span>
+            <span class="original-price">{{ currency }} {{ image.price }}</span>
+            <span class="discount-badge">40% OFF</span>
+          </div>
           <div class="product-stock" [class.in-stock]="image.availableStock > 0" [class.out-of-stock]="image.availableStock === 0">
             {{ image.availableStock > 0 ? 'In Stock' : 'Out of Stock' }}
           </div>
@@ -146,14 +150,66 @@
           <span class="color-dot" [style.background-color]="getColorBackground(selectedImage.colorName || getColorName(selectedImage.colorId))"></span>
           <span>{{ selectedImage.colorName || getColorName(selectedImage.colorId) }}</span>
         </div>
-        <div class="product-price">{{ currency }} {{ selectedImage.price }}</div>
-        <div class="product-stock" [class.in-stock]="selectedImage.availableStock > 0" [class.out-of-stock]="selectedImage.availableStock === 0">
-          {{ selectedImage.availableStock > 0 ? 'In Stock: ' + selectedImage.availableStock + ' available' : 'Out of Stock' }}
+        <div class="product-price">
+          <span class="discounted-price">{{ currency }} {{ (selectedImage.price * 1.4).toFixed(2) }}</span>
+          <span class="original-price">{{ currency }} {{ selectedImage.price }}</span>
+          <span class="discount-badge">40% OFF</span>
         </div>
+        <!-- Stock information removed from modal as requested -->
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  .product-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+  }
+
+  .discounted-price {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #e74c3c;
+  }
+
+  .original-price {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    text-decoration: line-through;
+  }
+
+  .discount-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  /* Modal specific pricing styles */
+  .modal-details .product-price {
+    margin: 12px 0;
+  }
+
+  .modal-details .discounted-price {
+    font-size: 1.5em;
+  }
+
+  .modal-details .original-price {
+    font-size: 1.1em;
+  }
+
+  .modal-details .discount-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+  }
+</style>
 
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
